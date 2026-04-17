@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Comments Year Filter PRO",
+  "version": "5.0",
+  "description": "Optimized: fetch only needed comments by year",
+  "permissions": ["activeTab"],
+  "host_permissions": ["https://www.googleapis.com/*"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

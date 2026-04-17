@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Comments Filter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h3>Filter Comments by Year</h3>
+  <form id="form">
+  <input id="year" placeholder="Enter year (e.g. 2020)" />
+  <button type="submit">Load Comments</button>
+  </form>
+  <div id="progress-container">
+  <div id="progress-bar"></div>
+</div>
+
+<div id="progress-text"></div>
+  <div id="results"></div>
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
