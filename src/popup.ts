@@ -1,17 +1,35 @@
+import { API_KEY } from "./config";
+
+type Comment = {
+  text: string;
+  date: string;
+  likes: number;
+  author: string;
+};
+
+type CachePayload = {
+  timestamp: number;
+  data: Comment[];
+};
+
 const MAX_FETCH = 800;
 const TARGET_COMMENTS = 150;
 
 // MAIN ENTRY
-document.getElementById("form").onsubmit = async (event) => {
+const form = document.getElementById("form") as HTMLFormElement;
+
+form.onsubmit = async (event: SubmitEvent) => {
   event.preventDefault();
 
-  const year = parseInt(document.getElementById("year").value);
+  const yearInput = document.getElementById("year") as HTMLInputElement;
+  const year = parseInt(yearInput.value);
+
   if (!year) return alert("Enter a valid year");
 
   const videoId = await getVideoId();
   if (!videoId) return alert("Not a YouTube video");
 
-  const container = document.getElementById("results");
+  const container = document.getElementById("results") as HTMLElement;
 
   const cached = getFromCache(videoId, year);
 
@@ -41,24 +59,25 @@ document.getElementById("form").onsubmit = async (event) => {
 };
 
 //SAVE CACHE
-function saveToCache(videoId, year, data) {
+function saveToCache(videoId: string, year: number, data: Comment[]): void {
   const key = `yt-comments-${videoId}-${year}`;
-  const payload = {
+  const payload: CachePayload = {
     timestamp: Date.now(),
     data
   };
   localStorage.setItem(key, JSON.stringify(payload));
 }
 
+
 //GET CACHE
-function getFromCache(videoId, year) {
+function getFromCache(videoId: string, year: number): Comment[] | null {
   const key = `yt-comments-${videoId}-${year}`;
   const cached = localStorage.getItem(key);
 
   if (!cached) return null;
 
   try {
-    const parsed = JSON.parse(cached);
+    const parsed: CachePayload = JSON.parse(cached);
 
     const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -73,16 +92,17 @@ function getFromCache(videoId, year) {
 }
 
 // GET VIDEO ID
-async function getVideoId() {
+async function getVideoId(): Promise<string | null> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab.url) return null;
+
   const url = new URL(tab.url);
   return url.searchParams.get("v");
 }
 
 // FETCH COMMENTS
-document.getElementById("progress-text").innerText = "";
-async function fetchCommentsByYear(videoId, year) {
-  let comments = [];
+async function fetchCommentsByYear(videoId: string, year: number): Promise<Comment[]> {
+  let comments: Comment[] = [];
   let pageToken = "";
   let fetched = 0;
 
@@ -90,7 +110,7 @@ async function fetchCommentsByYear(videoId, year) {
     const url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${API_KEY}`;
 
     const response = await fetch(url);
-    const data = await response.json();
+    const data: any = await response.json();
 
     if (!data.items) break;
 
@@ -108,8 +128,10 @@ async function fetchCommentsByYear(videoId, year) {
           author: commentSnippet.authorDisplayName
         });
       }
-      if (fetched >= MAX_FETCH && comments.length < 20) break;
+
+      if (fetched >= MAX_FETCH) break;
     }
+
     let percent = Math.min((fetched / MAX_FETCH) * 100, 95);
 
     if (comments.length >= TARGET_COMMENTS) {
@@ -117,6 +139,7 @@ async function fetchCommentsByYear(videoId, year) {
     }
 
     updateProgress(percent, `Analyzed: ${fetched} | Found: ${comments.length}`);
+
     pageToken = data.nextPageToken;
     if (!pageToken) break;
   }
@@ -125,23 +148,23 @@ async function fetchCommentsByYear(videoId, year) {
 }
 
 // UPDATE PROGRESS BAR
-function updateProgress(percent, text = "") {
-  const bar = document.getElementById("progress-bar");
-  const label = document.getElementById("progress-text");
+function updateProgress(percent: number, text: string = ""): void {
+  const bar = document.getElementById("progress-bar") as HTMLElement;
+  const label = document.getElementById("progress-text") as HTMLElement;
 
   bar.style.width = percent + "%";
   label.innerText = text;
 }
-// GET TOP COMMENTS
-function getTopComments(comments, limit) {
+
+function getTopComments(comments: Comment[], limit: number): Comment[] {
   return comments
     .sort((a, b) => b.likes - a.likes)
     .slice(0, limit);
 }
 
 // RENDER UI
-function render(comments) {
-  const container = document.getElementById("results");
+function render(comments: Comment[]): void {
+  const container = document.getElementById("results") as HTMLElement;
   container.innerHTML = "";
 
   if (comments.length === 0) {
@@ -172,7 +195,7 @@ function render(comments) {
 }
 
 // BADGES
-function getBadge(rank) {
+function getBadge(rank: number): string {
   if (rank === 1) return "🥇";
   if (rank === 2) return "🥈";
   if (rank === 3) return "🥉";

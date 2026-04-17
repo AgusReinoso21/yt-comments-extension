@@ -1,0 +1,11 @@
+{
+  "name": "yt-comments-extension",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/chrome": "^0.0.0"
+  }
+}
